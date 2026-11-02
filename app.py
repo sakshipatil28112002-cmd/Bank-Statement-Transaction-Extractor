@@ -1,4 +1,6 @@
+#hashlib is a Python library used to generate hash values.
 import hashlib
+#re stands for Regular Expression.
 import re
 from datetime import datetime
 import pandas as pd
