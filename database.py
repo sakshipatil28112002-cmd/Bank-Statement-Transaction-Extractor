@@ -1,22 +1,33 @@
 import sqlite3
 
+# Name of the SQLite database file
 DB_NAME = "bank_statement.db"
 
 
+# Create a connection with the database
 def create_connection():
-    """Create and return a SQLite database connection with timeout, foreign keys, and WAL mode."""
+
+    # Connect to SQLite database with 30 seconds timeout
     conn = sqlite3.connect(DB_NAME, timeout=30.0)
+
+    # Enable foreign key constraints
     conn.execute("PRAGMA foreign_keys = ON")
+
+    # Enable Write-Ahead Logging for better database access
     conn.execute("PRAGMA journal_mode = WAL")
+
+    # Return the database connection
     return conn
 
 
+# Create all required database tables
 def create_tables():
-    """Create all required tables for users, statements, and transactions."""
+
+    # Open database connection
     with create_connection() as conn:
         cursor = conn.cursor()
 
-        # 1. Users Table
+        # 1. Create Users Table
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             user_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,7 +37,7 @@ def create_tables():
         )
         """)
 
-        # 2. Statements Table
+        # 2. Create Statements Table
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS statements (
             statement_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,7 +50,7 @@ def create_tables():
         )
         """)
 
-        # 3. Transactions Table
+        # 3. Create Transactions Table
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS transactions (
             transaction_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -53,13 +64,18 @@ def create_tables():
         )
         """)
 
+        # Save all table creation changes
         conn.commit()
 
 
+# Update an existing user's profile
 def update_user_profile(user_id, name, bank_name):
-    """Update profile details for an existing user."""
+
+    # Open database connection
     with create_connection() as conn:
         cursor = conn.cursor()
+
+        # Update name and bank name using user ID
         cursor.execute(
             """
             UPDATE users
@@ -68,15 +84,19 @@ def update_user_profile(user_id, name, bank_name):
             """,
             (name, bank_name, user_id),
         )
+
+        # Save updated profile details
         conn.commit()
 
 
+# Delete a user profile and its related records
 def delete_user_profile(user_id):
-    """Delete a user profile and clean up all dependent statements and transactions."""
+
+    # Open database connection
     with create_connection() as conn:
         cursor = conn.cursor()
 
-        # Explicitly remove child transactions first
+        # First, delete transactions linked to the user's statements
         cursor.execute(
             """
             DELETE FROM transactions 
@@ -87,10 +107,17 @@ def delete_user_profile(user_id):
             (user_id,),
         )
 
-        # Explicitly remove child statements
-        cursor.execute("DELETE FROM statements WHERE user_id = ?", (user_id,))
+        # Delete all statements belonging to the user
+        cursor.execute(
+            "DELETE FROM statements WHERE user_id = ?",
+            (user_id,)
+        )
 
-        # Delete the user record
-        cursor.execute("DELETE FROM users WHERE user_id = ?", (user_id,))
+        # Finally, delete the user profile
+        cursor.execute(
+            "DELETE FROM users WHERE user_id = ?",
+            (user_id,)
+        )
 
+        # Save all deletion changes
         conn.commit()
