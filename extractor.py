@@ -141,7 +141,7 @@ def extract_pdf(file_bytes, password=None):
             r"\s+",
             " ",
             description
-        ).strip()
+        ).strip() 
 
         return description
 
