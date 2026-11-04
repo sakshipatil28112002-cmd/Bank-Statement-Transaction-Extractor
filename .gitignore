@@ -1,1 +1,16 @@
-.venv
+# Virtual environments
+venv/
+__pycache__/
+*.pyc
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Uploaded and exported files
+uploads/
+exports/
+
+# Environment variables
+.env
